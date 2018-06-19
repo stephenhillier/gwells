@@ -196,6 +196,7 @@ class ApplicationListSerializer(AuditModelSerializer):
             'subactivity',
             'qualifications',
             'cert_authority',
+            'current_status',
             'removal_date',
             'certificate')
 
@@ -232,7 +233,7 @@ class RegistrationsListSerializer(serializers.ModelSerializer):
         source='registries_activity.description')
     activity = serializers.ReadOnlyField(
         source="registries_activity.registries_activity_code")
-    applications = serializers.SerializerMethodField()
+    applications = ApplicationListSerializer(many=True, read_only=True)
     organization = OrganizationListSerializer()
 
     class Meta:
@@ -245,29 +246,6 @@ class RegistrationsListSerializer(serializers.ModelSerializer):
             'applications',
             'organization',
         )
-
-    def get_applications(self, registration):
-        """
-        Filter for approved applications (application has an 'approved' status that is not expired)
-        """
-
-        instance = registration.applications \
-            .select_related(
-                'current_status',
-                'primary_certificate',
-                'primary_certificate__cert_auth',
-                'subactivity',
-            ) \
-            .prefetch_related(
-                'subactivity__qualification_set',
-                'subactivity__qualification_set__well_class'
-            ) \
-            .filter(current_status__code='A')
-
-        serializer = ApplicationListSerializer(
-            instance=instance,
-            many=True)
-        return serializer.data
 
 
 class PersonBasicSerializer(serializers.ModelSerializer):
@@ -585,7 +563,7 @@ class PersonListSerializer(AuditModelSerializer):
     Serializes the Person model for a list view (fewer fields than detail view)
     """
     contact_info = ContactInfoSerializer(many=True, read_only=True)
-    registrations = serializers.SerializerMethodField()
+    registrations = RegistrationsListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Person
@@ -599,23 +577,6 @@ class PersonListSerializer(AuditModelSerializer):
             'contact_cell',
             'contact_email'
         )
-
-    def get_registrations(self, person):
-        """
-        Filter for active registrations
-        """
-        registrations = [
-            reg for reg in person.registrations
-            .select_related(
-                'registries_activity',
-                'status',
-                'organization__province_state')
-            .filter(
-                applications__current_status__code='A').distinct()]
-
-        serializer = RegistrationsListSerializer(
-            instance=registrations, many=True)
-        return serializer.data
 
 
 class QualificationAutoCreateSerializer(serializers.ModelSerializer):
