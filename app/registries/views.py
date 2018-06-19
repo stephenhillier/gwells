@@ -304,10 +304,19 @@ class PersonListView(AuditCreateMixin, ListCreateAPIView):
         if not user_is_staff:
             # User is not logged in
             # Only show active drillers to non-admin users and public
-            qs = qs.filter(
-                registrations__applications__current_status__code='A',
-                registrations__applications__removal_date__isnull=True) \
-                .filter(expired_date__isnull=True)
+
+            if activity:
+                qs = qs.filter(
+                    registrations__applications__current_status__code='A',
+                    registrations__applications__removal_date__isnull=True,
+                    registrations__registries_activity__registries_activity_code=activity
+                )
+
+            else:
+                qs = qs.filter(
+                    registrations__applications__current_status__code='A',
+                    registrations__applications__removal_date__isnull=True
+                )
 
             registrations_qs = registrations_qs.filter(
                 Q(applications__current_status__code='A'),
