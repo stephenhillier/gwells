@@ -1,52 +1,45 @@
 const fakeOptions = JSON.parse(JSON.stringify({
   'DRILL': {
-    'WellClassCode': [
+    'well_class_codes': [
       {
-        'registries_well_class_code': 'WAT',
-        'description': 'Water supply well'
-      },
-      {
-        'registries_well_class_code': 'MON',
-        'description': 'Monitoring well'
-      },
-      {
-        'registries_well_class_code': 'MON',
-        'description': 'Monitoring well'
-      },
-      {
-        'registries_well_class_code': 'RECH',
-        'description': 'Recharge/Injection well'
+        'registries_well_class_code': 'CLOS',
+        'description': 'Closed loop geoexchange well'
       },
       {
         'registries_well_class_code': 'DEWAT',
         'description': 'Dewatering well'
       },
       {
-        'registries_well_class_code': 'REM',
-        'description': 'Remediatation well'
-      },
-      {
-        'registries_well_class_code': 'REM',
-        'description': 'Remediatation well'
-      },
-      {
         'registries_well_class_code': 'GEO',
         'description': 'Geotechnical well'
       },
       {
-        'registries_well_class_code': 'GEO',
-        'description': 'Geotechnical well'
-      },
-      {
-        'registries_well_class_code': 'CLOS',
-        'description': 'Closed loop geoexchange well'
+        'registries_well_class_code': 'MON',
+        'description': 'Monitoring well'
       },
       {
         'registries_well_class_code': 'PUMP',
         'description': 'Install pump in Water supply, Recharge/Injection, or Dewatering well'
+      },
+      {
+        'registries_well_class_code': 'RECH',
+        'description': 'Recharge/Injection well'
+      },
+      {
+        'registries_well_class_code': 'REM',
+        'description': 'Remediatation well'
+      },
+      {
+        'registries_well_class_code': 'WAT',
+        'description': 'Water supply well'
       }
     ],
-    'SubactivityCode': [
+    'subactivity_codes': [
+      {
+        'registries_subactivity_code': 'WELL',
+        'description': 'Exempted Well Driller',
+        'qualification_set': []
+      },
       {
         'registries_subactivity_code': 'WATER',
         'description': 'Water Well Driller',
@@ -108,19 +101,9 @@ const fakeOptions = JSON.parse(JSON.stringify({
             'description': 'Closed loop geoexchange well'
           }
         ]
-      },
-      {
-        'registries_subactivity_code': 'PHASE2',
-        'description': 'Grandparented up to Feb 29, 2016',
-        'qualification_set': []
-      },
-      {
-        'registries_subactivity_code': 'PHASE1',
-        'description': 'Grandparented up to Nov 2006',
-        'qualification_set': []
       }
     ],
-    'AccreditedCertificateCode': [
+    'accredited_certificate_codes': [
       {
         'acc_cert_guid': '28bf8730-dbb7-4218-8e9f-06bd51f60161',
         'name': 'Geoexchange Driller Certificate',
@@ -132,11 +115,6 @@ const fakeOptions = JSON.parse(JSON.stringify({
         'cert_auth': 'Province of B.C.'
       },
       {
-        'acc_cert_guid': 'a53d3f1e-65eb-46b7-8999-e662d654df77',
-        'name': 'Grand-parent',
-        'cert_auth': 'Grand-fathered'
-      },
-      {
         'acc_cert_guid': 'e368e066-137b-491a-af2a-da3bf2936e6d',
         'name': 'Grand-parent',
         'cert_auth': 'Grand-fathered'
@@ -144,11 +122,6 @@ const fakeOptions = JSON.parse(JSON.stringify({
       {
         'acc_cert_guid': '4a059930-265f-43f5-9dbb-c71862ccc5b5',
         'name': 'Ground Water Drilling Technician Certificate',
-        'cert_auth': 'Canadian Ground Water Association'
-      },
-      {
-        'acc_cert_guid': '1886daa8-e799-49f0-9034-33d02bad543d',
-        'name': 'Ground Water Pump Technician Certificate',
         'cert_auth': 'Canadian Ground Water Association'
       },
       {
@@ -167,12 +140,7 @@ const fakeOptions = JSON.parse(JSON.stringify({
         'cert_auth': 'Province of Saskatchewan'
       },
       {
-        'acc_cert_guid': '7bf968aa-c6e0-4f57-b4f4-58723214de80',
-        'name': 'Well Pump Installer Certificate',
-        'cert_auth': 'Province of B.C.'
-      },
-      {
-        'acc_cert_guid': '88d5d0aa-d2aa-450a-9708-a911dce42f7f',
+        'acc_cert_guid': 'e0d774bd-aba9-4a6c-9d5e-4020cfe82865',
         'name': 'Well Technician Certificate',
         'cert_auth': 'Province of Ontario'
       },
@@ -182,7 +150,177 @@ const fakeOptions = JSON.parse(JSON.stringify({
         'cert_auth': 'Province of Ontario'
       }
     ]
-  }
+  },
+  'PUMP': {
+    'well_class_codes': [
+      {
+        'registries_well_class_code': 'PUMP',
+        'description': 'Install pump in Water supply, Recharge/Injection, or Dewatering well'
+      }
+    ],
+    'subactivity_codes': [
+      {
+        'registries_subactivity_code': 'PUMPINST',
+        'description': 'Pump Installer',
+        'qualification_set': [
+          {
+            'well_class': 'PUMP',
+            'description': 'Install pump in Water supply, Recharge/Injection, or Dewatering well'
+          }
+        ]
+      }
+    ],
+    'accredited_certificate_codes': [
+      {
+        'acc_cert_guid': 'a53d3f1e-65eb-46b7-8999-e662d654df77',
+        'name': 'Grand-parent',
+        'cert_auth': 'Grand-fathered'
+      },
+      {
+        'acc_cert_guid': '1886daa8-e799-49f0-9034-33d02bad543d',
+        'name': 'Ground Water Pump Technician Certificate',
+        'cert_auth': 'Canadian Ground Water Association'
+      },
+      {
+        'acc_cert_guid': '1dfd37f5-5082-497a-be4e-6facd1d4dee9',
+        'name': 'Ground Water Pump Technician Certificate, Class 2',
+        'cert_auth': 'Canadian Ground Water Association'
+      },
+      {
+        'acc_cert_guid': '7bf968aa-c6e0-4f57-b4f4-58723214de80',
+        'name': 'Well Pump Installer Certificate',
+        'cert_auth': 'Province of B.C.'
+      },
+      {
+        'acc_cert_guid': '88d5d0aa-d2aa-450a-9708-a911dce42f7f',
+        'name': 'Well Technician Certificate',
+        'cert_auth': 'Province of Ontario'
+      }
+    ]
+  },
+  'proof_of_age_codes': [
+    {
+      'code': 'BIRTH',
+      'description': 'Birth Certificate'
+    },
+    {
+      'code': 'DRIVERS',
+      'description': "Driver's Licence"
+    },
+    {
+      'code': 'PASSPORT',
+      'description': 'Passport'
+    }
+  ],
+  'approval_outcome_codes': [
+    {
+      'code': 'P',
+      'description': 'Pending'
+    },
+    {
+      'code': 'A',
+      'description': 'Approved'
+    },
+    {
+      'code': 'NA',
+      'description': 'Not Approved'
+    },
+    {
+      'code': 'I',
+      'description': 'Incomplete'
+    }
+  ],
+  'reason_removed_codes': [
+    {
+      'code': 'MAINT_REQ',
+      'description': 'Fails to maintain a requirement for registration'
+    },
+    {
+      'code': 'MEET_REQ',
+      'description': 'Fails to meet a requirement for registration'
+    },
+    {
+      'code': 'NOT_WORK',
+      'description': 'No longer actively working in Canada'
+    }
+  ],
+  'province_state_codes': [
+    {
+      'province_state_code': 'BC',
+      'description': 'British Colmubia',
+      'display_order': 2
+    },
+    {
+      'province_state_code': 'AB',
+      'description': 'Alberta',
+      'display_order': 4
+    },
+    {
+      'province_state_code': 'ON',
+      'description': 'Ontario',
+      'display_order': 6
+    },
+    {
+      'province_state_code': 'MB',
+      'description': 'Manitoba',
+      'display_order': 8
+    },
+    {
+      'province_state_code': 'NB',
+      'description': 'New Brunswick',
+      'display_order': 10
+    },
+    {
+      'province_state_code': 'NL',
+      'description': 'Newfoundland and Labrador',
+      'display_order': 12
+    },
+    {
+      'province_state_code': 'NS',
+      'description': 'Nova Scotia',
+      'display_order': 14
+    },
+    {
+      'province_state_code': 'NT',
+      'description': 'Northwest Territories',
+      'display_order': 16
+    },
+    {
+      'province_state_code': 'NU',
+      'description': 'Nunavut',
+      'display_order': 18
+    },
+    {
+      'province_state_code': 'PE',
+      'description': 'Prince Edward Island',
+      'display_order': 20
+    },
+    {
+      'province_state_code': 'QC',
+      'description': 'Quebec',
+      'display_order': 22
+    },
+    {
+      'province_state_code': 'SK',
+      'description': 'Saskatchewan',
+      'display_order': 24
+    },
+    {
+      'province_state_code': 'YT',
+      'description': 'Yukon',
+      'display_order': 26
+    },
+    {
+      'province_state_code': 'WA',
+      'description': 'Never Never Land',
+      'display_order': 30
+    },
+    {
+      'province_state_code': 'OTHER',
+      'description': 'Other',
+      'display_order': 90
+    }
+  ]
 }))
 
 export default fakeOptions

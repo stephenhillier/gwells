@@ -16,6 +16,7 @@
 #
 #   Example: ./db-replicate.sh
 #
+set -e
 export PGPASSWORD=$DATABASE_PASSWORD
 
 if [ "$DB_REPLICATE" = "Subset" ]

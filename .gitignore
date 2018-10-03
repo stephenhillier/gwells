@@ -78,6 +78,9 @@ var/
 *.egg
 webpack-stats.json
 api-tests/.envrc
+functional-tests/.envrc
+app/backend/.env
+*.secret_env
 
 # PyInstaller and Pip install files
 #  Usually these files are written by a python script from a template
@@ -117,8 +120,9 @@ gwells.pyproj*
 *.sublime-workspace
 .vscode
 *.ipynb
+.idea
 
-#functional-tests
+# functional-tests
 functional-tests/.gradle/
 functional-tests/build
 functional-tests/.project
@@ -127,19 +131,15 @@ functional-tests/.classpath
 functional-tests/bin
 functional-tests/src/test/groovy/testtamplet.txt
 
-# Custom GW
-activate
-x.sh
-
 #virtual env
 /deactivate
 .venv
 .direnv
 
 # Frontend files
-frontend/node_modules/
 frontend/webpack-stats.json
-app/gwells/static/vue
+app/backend/gwells/static/vue
+**/node_modules/
 
 sonar-runner/.gradle
 *.patch
@@ -155,3 +155,8 @@ sonar-runner/.classpath
 
 # DB
 *.dmp
+*.pgCustom
+.tmp/
+
+# Exceptions
+!app/*/fixtures/*.gz

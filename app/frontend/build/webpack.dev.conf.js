@@ -16,6 +16,10 @@ const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
 
 const devWebpackConfig = merge(baseWebpackConfig, {
+  entry: {
+    // the current module/app that the dev server should serve
+    submissions: './src/submissions/main.js'
+  },
   module: {
     rules: utils.styleLoaders({
       sourceMap: config.dev.cssSourceMap,
@@ -80,14 +84,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
       minChunks (module) {
-        // any required modules inside node_modules are extracted to vendor
-        return (
-          module.resource &&
-          /\.js$/.test(module.resource) &&
-          module.resource.indexOf(
-            path.join(__dirname, '../node_modules')
-          ) === 0
-        )
+        return module.context && module.context.includes('node_modules')
       }
     }),
     // extract webpack runtime and module manifest to its own file in order to
@@ -100,8 +97,15 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     // in a separate chunk, similar to the vendor chunk
     // see: https://webpack.js.org/plugins/commons-chunk-plugin/#extra-async-commons-chunk
     new webpack.optimize.CommonsChunkPlugin({
-      name: 'app',
-      async: 'vendor-async',
+      names: [
+        'header',
+        'registry',
+        'summary',
+        'documents',
+        'submissions',
+        'footer'
+      ],
+      async: true,
       children: true,
       minChunks: 3
     }),

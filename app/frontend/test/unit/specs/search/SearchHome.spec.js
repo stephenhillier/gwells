@@ -1,9 +1,11 @@
-import { shallow, createLocalVue } from '@vue/test-utils'
+import { shallowMount, createLocalVue } from '@vue/test-utils'
 import Vuex from 'vuex'
+import moxios from 'moxios'
 import SearchHome from '@/registry/components/search/SearchHome'
 import SearchTable from '@/registry/components/search/SearchTable'
 import APIErrorMessage from '@/common/components/APIErrorMessage'
-import { FETCH_CITY_LIST, FETCH_DRILLER_LIST, LOGIN, LOGOUT } from '@/registry/store/actions.types'
+import fakeDrillerOptions from '../fakeDrillerOptions'
+import { FETCH_CITY_LIST, FETCH_DRILLER_LIST, FETCH_DRILLER_OPTIONS } from '@/registry/store/actions.types'
 import { SET_DRILLER_LIST } from '@/registry/store/mutations.types'
 
 const localVue = createLocalVue()
@@ -16,8 +18,9 @@ describe('SearchHome.vue', () => {
   let mutations
 
   beforeEach(() => {
+    moxios.install()
     getters = {
-      userIsAdmin: () => false,
+      drillerOptions: jest.fn().mockReturnValue(fakeDrillerOptions),
       drillers: () => {
         return {
           results: [
@@ -73,13 +76,14 @@ describe('SearchHome.vue', () => {
             }
           ]
         }
-      }
+      },
+      userRoles: () => ({ registry: { edit: false, view: false, approve: false } }),
+      activity: () => 'DRILL'
     }
     actions = {
       [FETCH_CITY_LIST]: jest.fn(),
       [FETCH_DRILLER_LIST]: jest.fn(),
-      [LOGIN]: jest.fn(),
-      [LOGOUT]: jest.fn()
+      [FETCH_DRILLER_OPTIONS]: jest.fn()
     }
     mutations = {
       [SET_DRILLER_LIST]: jest.fn()
@@ -87,8 +91,12 @@ describe('SearchHome.vue', () => {
     store = new Vuex.Store({ getters, actions, mutations })
   })
 
+  afterEach(() => {
+    moxios.uninstall()
+  })
+
   it('loads the table component', () => {
-    const wrapper = shallow(SearchHome, {
+    const wrapper = shallowMount(SearchHome, {
       store,
       localVue
     })
@@ -98,16 +106,17 @@ describe('SearchHome.vue', () => {
 
   it('loads the error component if there is an error', () => {
     const getters = {
-      userIsAdmin: () => false,
       drillers: () => [],
       loading: () => false,
       listError: () => {
         return { status: '400', statusText: 'error!' }
       },
-      cityList: () => []
+      cityList: () => [],
+      activity: () => 'DRILL',
+      userRoles: () => ({ registry: { edit: false, view: false, approve: false } })
     }
     const store = new Vuex.Store({ getters, actions })
-    const wrapper = shallow(SearchHome, {
+    const wrapper = shallowMount(SearchHome, {
       store,
       localVue
     })
@@ -116,7 +125,7 @@ describe('SearchHome.vue', () => {
   })
 
   it('doesn\'t load the error component if there is no error', () => {
-    const wrapper = shallow(SearchHome, {
+    const wrapper = shallowMount(SearchHome, {
       store,
       localVue
     })
@@ -124,7 +133,7 @@ describe('SearchHome.vue', () => {
       .toEqual(0)
   })
   it('resets search params when reset button is clicked', () => {
-    const wrapper = shallow(SearchHome, {
+    const wrapper = shallowMount(SearchHome, {
       store,
       localVue
     })
@@ -151,13 +160,13 @@ describe('SearchHome.vue', () => {
       search: '',
       city: [''],
       activity: 'DRILL',
-      status: 'ACTIVE',
+      status: 'A',
       limit: '10',
       ordering: ''
     })
   })
   it('calls sort method when register table component emits a sort code', () => {
-    const wrapper = shallow(SearchHome, {
+    const wrapper = shallowMount(SearchHome, {
       store,
       localVue
     })
@@ -167,7 +176,7 @@ describe('SearchHome.vue', () => {
     expect(wrapper.vm.lastSearchedParams.ordering).toEqual('-surname')
   })
   it('has a list of cities for drillers', () => {
-    const wrapper = shallow(SearchHome, {
+    const wrapper = shallowMount(SearchHome, {
       store,
       localVue
     })
@@ -179,7 +188,7 @@ describe('SearchHome.vue', () => {
     expect(cityOptions.at(3).text()).toEqual('Jasper')
   })
   it('clears driller list when reset is clicked', () => {
-    const wrapper = shallow(SearchHome, {
+    const wrapper = shallowMount(SearchHome, {
       store,
       localVue
     })

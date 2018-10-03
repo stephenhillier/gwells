@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "040a51d3-6494-4cfa-be50-cc7b7112035f",
-		"name": "GWELLS API (Keycloak)",
+		"_postman_id": "1ab0d6b2-a821-4bd5-be73-ef33597c8aa9",
+		"name": "GWELLS API remote",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -103,7 +103,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "e5dfd37f-33f2-4c2f-9b47-cf9d178bfda9",
+										"id": "2ce89229-b4af-45c3-8645-ef507a84011c",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -138,10 +138,6 @@
 											"        pm.expect(jsonData.city, \"city field has unexpected value\").to.not.be.ok;",
 											"    });",
 											"    ",
-											"    pm.test(\"Audit fields (who_created, when_created) were filled in by backend\", function () {",
-											"        pm.expect(jsonData.create_user.length, \"create_user not present\").to.be.ok;",
-											"        pm.expect(jsonData.create_date.length, \"create_date not present\").to.be.ok;",
-											"    });",
 											"})();",
 											""
 										]
@@ -201,6 +197,11 @@
 											"key": "province_state",
 											"value": "BC",
 											"type": "text"
+										},
+										{
+											"key": "email",
+											"value": "company@example.com",
+											"type": "text"
 										}
 									]
 								},
@@ -231,7 +232,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "d882b27b-2b02-436f-ac11-d26f1f7bb4b7",
+										"id": "5410792d-f57e-4e98-914d-53d126c2ee76",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -247,17 +248,11 @@
 											"        pm.expect(created_guid.length).to.eql(36);",
 											"",
 											"        // Then check that created_guid is in the response body",
-											"        pm.expect(jsonData.results.length).to.be.above(0);",
+											"        pm.expect(jsonData.length).to.be.above(0);",
 											"        ",
-											"        for (var i; i < jsonData.results.length; i++) {",
-											"            pm.expect(jsonData.results[i].org_guid.length).to.eql(36);",
-											"            pm.expect(jsonData.results[i].name.length).to.be.ok;",
-											"        }",
-											"    });",
-											"    ",
-											"    pm.test(\"Pagination: if there are more objects than the page limit, provide a link to the next page\", function () {",
-											"        if (jsonData.results.length < jsonData.count) {",
-											"            pm.expect(jsonData.next.length).to.be.ok;",
+											"        for (var i; i < jsonData.length; i++) {",
+											"            pm.expect(jsonData[i].org_guid.length).to.eql(36);",
+											"            pm.expect(jsonData[i].name.length).to.be.ok;",
 											"        }",
 											"    });",
 											"})();",
@@ -278,7 +273,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/?format=json",
 									"host": [
@@ -333,7 +331,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/names/",
 									"host": [
@@ -348,6 +349,81 @@
 									]
 								},
 								"description": "Organization model \"list\" view"
+							},
+							"response": []
+						},
+						{
+							"name": "Company add notes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dae82277-ba57-4c35-a10c-71fa9a94ae1b",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Successful request (201 CREATED)\", function () {",
+											"        pm.expect(pm.response.code).to.eql(201);",
+											"    });",
+											"    ",
+											"    var jsonData = pm.response.json()",
+											"",
+											"    pm.test(\"Author recorded\", function () {",
+											"        pm.expect(jsonData.author).to.be.ok;",
+											"    });",
+											"    ",
+											"    pm.test(\"Date recorded\", function () {",
+											"        pm.expect(jsonData.date).to.be.ok;",
+											"    });",
+											"",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "note",
+											"value": "This is a company note!",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/organizations/{{created_guid}}/notes/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"organizations",
+										"{{created_guid}}",
+										"notes",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Update a driller record"
 							},
 							"response": []
 						},
@@ -399,7 +475,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/{{created_guid}}/?format=json",
 									"host": [
@@ -497,6 +576,73 @@
 							"response": []
 						},
 						{
+							"name": "Company history",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "ce7ad4d6-a09e-4a43-8dc4-05d02e58c305",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Status code is 200\", function () {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    ",
+											"    var jsonData = pm.response.json()",
+											"    ",
+											"    pm.test(\"History shows city changed to Victoria\", function () {",
+											"        pm.expect(jsonData[0].diff.city).to.eql(\"Victoria\");",
+											"    });",
+											"    pm.test(\"Username is logged for recent update\", function () {",
+											"        pm.expect(jsonData[0].user).to.eql(\"testuser\");",
+											"    });",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/organizations/{{created_guid}}/history/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"organizations",
+										"{{created_guid}}",
+										"history",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Retrieve single organization details"
+							},
+							"response": []
+						},
+						{
 							"name": "Company ListCreate Options",
 							"event": [
 								{
@@ -535,7 +681,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/?format=json",
 									"host": [
@@ -592,7 +741,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/{{created_guid}}/?format=json",
 									"host": [
@@ -957,7 +1109,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/{{created_guid_bad_input}}/?format=json",
 									"host": [
@@ -994,7 +1149,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "19e46f4c-30fe-4cd1-bbe1-26fe5a2713ff",
+										"id": "0831e40b-ed31-4044-b114-87f148e2764e",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -1005,15 +1160,19 @@
 											"    var jsonData = pm.response.json()",
 											"    ",
 											"    pm.test(\"Well class code list exists\", function () {",
-											"        pm.expect(jsonData.WellClassCode.length).to.be.ok;",
+											"        pm.expect(jsonData['DRILL'].well_class_codes.length).to.be.ok;",
 											"    });",
 											"    ",
 											"    pm.test(\"Subactivity code list exists\", function () {",
-											"        pm.expect(jsonData.SubactivityCode.length).to.be.ok;",
+											"        pm.expect(jsonData['DRILL'].subactivity_codes.length).to.be.ok;",
 											"    });",
 											"    ",
 											"    pm.test(\"AccreditedCertificateCode code list exists\", function () {",
-											"        pm.expect(jsonData.AccreditedCertificateCode.length).to.be.ok;",
+											"        pm.expect(jsonData['DRILL'].accredited_certificate_codes.length).to.be.ok;",
+											"    });",
+											"    ",
+											"    pm.test(\"Proof of age list exists\", function () {",
+											"        pm.expect(jsonData.proof_of_age_codes.length).to.be.ok;",
 											"    });",
 											"})();",
 											""
@@ -1041,7 +1200,7 @@
 									"raw": ""
 								},
 								"url": {
-									"raw": "{{base_url}}/api/v1/drillers/options/?format=json&activity=DRILL",
+									"raw": "{{base_url}}/api/v1/drillers/options/?format=json",
 									"host": [
 										"{{base_url}}"
 									],
@@ -1056,10 +1215,6 @@
 										{
 											"key": "format",
 											"value": "json"
-										},
-										{
-											"key": "activity",
-											"value": "DRILL"
 										}
 									]
 								},
@@ -1073,7 +1228,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "0796ed98-bf24-4dcf-833b-bfcac1539e62",
+										"id": "a3a60ebd-f4a3-40b6-9fa4-876b1e71f95d",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -1101,7 +1256,7 @@
 											"    });",
 											"    ",
 											"    pm.test(\"The application has the specified primary certificate\", function() {",
-											"        pm.expect(applications[0].primary_certificate).to.eql(\"28bf8730-dbb7-4218-8e9f-06bd51f60161\");",
+											"        pm.expect(applications[0].primary_certificate.acc_cert_guid).to.eql(\"28bf8730-dbb7-4218-8e9f-06bd51f60161\");",
 											"    });",
 											"    ",
 											"    pm.test(\"The application has the specified certificate no\", function() {",
@@ -1109,12 +1264,16 @@
 											"    });",
 											"    ",
 											"    pm.test(\"The application has a subactivity associated\", function() {",
-											"        pm.expect(applications[0].subactivity).to.eql(\"WATER\");",
+											"        pm.expect(applications[0].subactivity.registries_subactivity_code).to.eql(\"WATER\");",
 											"    });",
 											"    ",
 											"    pm.test(\"The application has a pending status set, with the specified date\", function() {",
-											"        pm.expect(applications[0].status_set[0].status).to.eql(\"P\");",
-											"        pm.expect(applications[0].status_set[0].effective_date).to.eql(\"2018-05-02\");",
+											"        pm.expect(applications[0].current_status.code).to.eql(\"P\");",
+											"        pm.expect(applications[0].application_recieved_date).to.eql(\"2018-05-02\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The application has proof of age\", function() {",
+											"        pm.expect(applications[0].proof_of_age.code).to.eql(\"PASSPORT\");",
 											"    });",
 											"})();",
 											""
@@ -1139,7 +1298,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"first_name\": \"Bobby\",\n  \"surname\": \"Driller\",\n  \"registrations\": [\n  \t{\n  \t\t\"registries_activity\": \"DRILL\", \n  \t\t\"status\": \"ACTIVE\",\n  \t\t\"organization\": \"{{created_guid}}\",\n  \t\t\"applications\": [\n  \t\t{\n  \t\t\t\"subactivity\": \"WATER\", \n  \t\t\t\"primary_certificate\": \"28bf8730-dbb7-4218-8e9f-06bd51f60161\", \n  \t\t\t\"primary_certificate_no\": \"12345\",\n  \t\t\t\"status_set\": [\n  \t\t\t\t{\n  \t\t\t\t\t\"effective_date\": \"2018-05-02\",\n  \t\t\t\t\t\"status\": \"P\"\n  \t\t\t\t}\n  \t\t\t]\n  \t\t},\n  \t\t{\n  \t\t\t\"subactivity\": \"WATER\", \n  \t\t\t\"primary_certificate\": \"28bf8730-dbb7-4218-8e9f-06bd51f60161\", \n  \t\t\t\"primary_certificate_no\": \"67890\",\n  \t\t\t\"status_set\": [\n  \t\t\t\t{\n  \t\t\t\t\t\"effective_date\": \"2018-05-02\",\n  \t\t\t\t\t\"status\": \"P\"\n  \t\t\t\t}\n  \t\t\t]\n  \t\t}\n\t\t]\n  }],\n  \"contact_info\": [{\"contact_tel\": \"555-1234\"}]\n}\n"
+									"raw": "{\n  \"first_name\": \"Bobby\",\n  \"surname\": \"Driller\",\n  \"contact_tel\": \"(555) 555-1234\",\n  \"contact_email\": \"bobby@example.com\",\n  \"registrations\": [\n  \t{\n  \t\t\"registries_activity\": \"DRILL\", \n  \t\t\"status\": \"ACTIVE\",\n  \t\t\"organization\": \"{{created_guid}}\",\n  \t\t\"applications\": [\n  \t\t{\n  \t\t\t\"subactivity\": {\n  \t\t\t\t\"registries_subactivity_code\": \"WATER\"\n  \t\t\t}, \n  \t\t\t\"primary_certificate\": {\n  \t\t\t\t\"acc_cert_guid\": \"28bf8730-dbb7-4218-8e9f-06bd51f60161\"\n  \t\t\t}, \n  \t\t\t\"primary_certificate_no\": \"12345\",\n  \t\t\t\"current_status\": {\"code\": \"P\"},\n  \t\t\t\"application_recieved_date\": \"2018-05-02\",\n  \t\t\t\"proof_of_age\": { \"code\": \"PASSPORT\"}\n  \t\t},\n  \t\t{\n  \t\t\t\"subactivity\": {\n  \t\t\t\t\"registries_subactivity_code\": \"WATER\"\n  \t\t\t},\n  \t\t\t\"primary_certificate\": {\n  \t\t\t\t\"acc_cert_guid\": \"28bf8730-dbb7-4218-8e9f-06bd51f60161\"\n  \t\t\t},\n  \t\t\t\"primary_certificate_no\": \"67890\",\n  \t\t\t\"current_status\": {\"code\" : \"P\"}\n  \t\t}\n\t\t]\n  }]\n}\n"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/?format=json",
@@ -1160,6 +1319,58 @@
 									]
 								},
 								"description": "Create a new driller, with registrations and applications in one go."
+							},
+							"response": []
+						},
+						{
+							"name": "Driller delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "a743a15a-6712-486a-9310-5d1261bb03c1",
+										"type": "text/javascript",
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"drillers",
+										"{{created_driller_guid}}",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Delete driller specified by GUID."
 							},
 							"response": []
 						},
@@ -1301,7 +1512,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/?format=json",
 									"host": [
@@ -1317,6 +1531,158 @@
 										{
 											"key": "format",
 											"value": "json"
+										}
+									]
+								},
+								"description": "Driller model \"list\" view"
+							},
+							"response": []
+						},
+						{
+							"name": "Driller Search",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "166b3bf2-247f-45ab-b5b1-4f726c9e6ffd",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Status code is 200\", function () {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/drillers/?search=&city=&status=&limit=10&activity=DRILL&ordering=0",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"drillers",
+										""
+									],
+									"query": [
+										{
+											"key": "search",
+											"value": ""
+										},
+										{
+											"key": "city",
+											"value": ""
+										},
+										{
+											"key": "status",
+											"value": ""
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "activity",
+											"value": "DRILL"
+										},
+										{
+											"key": "ordering",
+											"value": "0"
+										}
+									]
+								},
+								"description": "Driller model \"list\" view"
+							},
+							"response": []
+						},
+						{
+							"name": "Driller Search Removed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "166b3bf2-247f-45ab-b5b1-4f726c9e6ffd",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Status code is 200\", function () {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/drillers/?search=&city=&status=Removed&limit=10&activity=DRILL&ordering=0",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"drillers",
+										""
+									],
+									"query": [
+										{
+											"key": "search",
+											"value": ""
+										},
+										{
+											"key": "city",
+											"value": ""
+										},
+										{
+											"key": "status",
+											"value": "Removed"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "activity",
+											"value": "DRILL"
+										},
+										{
+											"key": "ordering",
+											"value": "0"
 										}
 									]
 								},
@@ -1370,7 +1736,83 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"drillers",
+										"{{created_driller_guid}}",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Driller model detail view - single driller"
+							},
+							"response": []
+						},
+						{
+							"name": "Driller retrieve (single driller detail) Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "faa0b48b-bc98-4828-8f2f-48edffca38b6",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Status code is 200\", function () {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    ",
+											"    var jsonData = pm.response.json()",
+											"    ",
+											"    pm.test(\"First name equals name supplied in request (Bobby)\", function () {",
+											"        pm.expect(jsonData.first_name).to.eql(\"Bobby\");",
+											"    });",
+											"    ",
+											"    pm.test(\"Last name equals value supplied in request (Driller)\", function () {",
+											"        pm.expect(jsonData.surname).to.eql(\"Driller\");",
+											"    });",
+											"    ",
+											"    pm.test(\"Audit fields are present and show the user who created the record\", function () {",
+											"        pm.expect(jsonData.create_user.length).to.be.ok;",
+											"        pm.expect(jsonData.create_date.length).to.be.ok;",
+											"        pm.expect(jsonData.create_user).to.eql(pm.environment.get(\"driller_audit_name\"));",
+											"    });",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
 									"host": [
@@ -1465,6 +1907,71 @@
 									]
 								},
 								"description": "Update a driller record"
+							},
+							"response": []
+						},
+						{
+							"name": "Driller history",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c474786d-b0e0-4ffa-8f79-8048fa042b7e",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Status code is 200\", function () {",
+											"        pm.response.to.have.status(200);",
+											"    });",
+											"    ",
+											"    var jsonData = pm.response.json()",
+											"    ",
+											"    pm.test(\"History shows name changed in most recent update\", function () {",
+											"        pm.expect(jsonData[0].diff.surname).to.eql(\"Drillerson\");",
+											"    });",
+											"",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/history/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"drillers",
+										"{{created_driller_guid}}",
+										"history",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Driller model detail view - single driller"
 							},
 							"response": []
 						},
@@ -1589,7 +2096,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
 									"host": [
@@ -1731,7 +2241,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/?format=json",
 									"host": [
@@ -1788,7 +2301,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
 									"host": [
@@ -1837,7 +2353,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
 									"host": [
@@ -1886,7 +2405,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/{{created_guid}}/?format=json",
 									"host": [
@@ -1950,7 +2472,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/?format=json",
 									"host": [
@@ -2003,7 +2528,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/{{created_guid}}/?format=json",
 									"host": [
@@ -2057,7 +2585,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
 									"host": [
@@ -2121,7 +2652,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/?format=json",
 									"host": [
@@ -2178,7 +2712,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/?format=json",
 									"host": [
@@ -2306,7 +2843,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "4f9d5aeb-c509-41f6-8043-fe9cdfc8f4df",
+										"id": "e5244e01-168a-4ad5-8716-d4a63559d55e",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -2323,10 +2860,6 @@
 											"        pm.expect(match, \"primary key not in UUID format\").to.be.ok;",
 											"        pm.expect(match.length).to.be.ok;",
 											"        pm.expect(match[0]).to.eql(jsonData.register_guid);",
-											"    });",
-											"    ",
-											"    pm.test(\"Registration is active\", function () {",
-											"        pm.expect(jsonData.status, \"not active\").to.eql(\"ACTIVE\");",
 											"    });",
 											"    ",
 											"    pm.test(\"Audit fields (who_created, when_created) were filled in by backend\", function () {",
@@ -2397,7 +2930,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "720af7d5-bc68-454f-ad0b-e8bc1f569bf3",
+										"id": "2d48d1ed-c85e-414b-b644-394fb538720c",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -2426,11 +2959,6 @@
 											"    ",
 											"    pm.test(\"Postal code equals value supplied in request\", function () {",
 											"        pm.expect(jsonData.postal_code, \"postal code does not match\").to.eql(\"a1a 1a1\");",
-											"    });",
-											"    ",
-											"    pm.test(\"Audit fields (who_created, when_created) were filled in by backend\", function () {",
-											"        pm.expect(jsonData.create_user.length, \"create_user not present\").to.be.ok;",
-											"        pm.expect(jsonData.create_date.length, \"create_date not present\").to.be.ok;",
 											"    });",
 											"})();",
 											""
@@ -2632,7 +3160,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/registrations/?format=json",
 									"host": [
@@ -2689,7 +3220,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
 									"host": [
@@ -2756,7 +3290,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/registrations/?format=json",
 									"host": [
@@ -2785,7 +3322,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "4f553fb0-fe72-4e5b-9281-cf0f51929ff5",
+										"id": "057a38f0-186d-4185-8756-817da5e2860c",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -2805,8 +3342,7 @@
 											"    });",
 											"    ",
 											"    pm.test(\"Application is pending\", function () {",
-											"        pm.expect(jsonData.status_set.length, \"application status set not valid\").to.eql(1);",
-											"        pm.expect(jsonData.status_set[0].description).to.eql('Pending')",
+											"        pm.expect(jsonData.current_status.code).to.eql('P')",
 											"    });",
 											"    ",
 											"    pm.test(\"Audit fields (who_created, when_created) were filled in by backend\", function () {",
@@ -2828,22 +3364,15 @@
 									{
 										"key": "Authorization",
 										"value": "JWT {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
 									}
 								],
 								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "registration",
-											"value": "{{created_registration_guid}}",
-											"type": "text"
-										},
-										{
-											"key": "subactivity",
-											"value": "WATER",
-											"type": "text"
-										}
-									]
+									"mode": "raw",
+									"raw": "{\n\t\"registration\": \"{{created_registration_guid}}\",\n\t\"subactivity\": {\n\t\t\"registries_subactivity_code\":\"WATER\"\n\t}\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/applications/?format=json",
@@ -2873,7 +3402,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "9740e966-9bda-4937-ac03-3b18e22cbe8c",
+										"id": "0830db16-5679-4af2-9fe5-13912c8122d2",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -2883,11 +3412,11 @@
 											"    var jsonData = pm.response.json();",
 											"    ",
 											"    pm.test(\"The record's current status is Pending\", function () {",
-											"        pm.expect(jsonData.current_status.status, \"current status not P\").to.eql(\"P\");",
+											"        pm.expect(jsonData.current_status.code, \"current status not P\").to.eql(\"P\");",
 											"    });",
 											"    ",
 											"    pm.test(\"The record's subactivity is WATER\", function () {",
-											"        pm.expect(jsonData.subactivity, \"current status not WATER\").to.eql(\"WATER\");",
+											"        pm.expect(jsonData.subactivity.registries_subactivity_code, \"current status not WATER\").to.eql(\"WATER\");",
 											"    });",
 											"})();",
 											""
@@ -2912,7 +3441,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"subactivity\": \"WATER\",\n  \"current_status\": {\n    \"status\": \"P\"\n  }\n}"
+									"raw": "{\n  \"subactivity\": {\n\t\"registries_subactivity_code\":\"WATER\"\n  },\n  \"current_status\": {\n    \"code\": \"P\"\n  }\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/applications/{{created_application_guid}}/?format=json",
@@ -2943,7 +3472,7 @@
 								{
 									"listen": "test",
 									"script": {
-										"id": "daa29f3c-9201-4949-8f85-71dcd5aaf5a7",
+										"id": "24086669-1849-4506-99cb-5d6f095d79bf",
 										"type": "text/javascript",
 										"exec": [
 											"( function() {",
@@ -2953,11 +3482,11 @@
 											"    var jsonData = pm.response.json();",
 											"    ",
 											"    pm.test(\"The record's current status is Active\", function () {",
-											"        pm.expect(jsonData.current_status.status, \"current status not A\").to.eql(\"A\");",
+											"        pm.expect(jsonData.current_status.code, \"current status not A\").to.eql(\"A\");",
 											"    });",
 											"    ",
 											"    pm.test(\"The record's subactivity is GEOTECH\", function () {",
-											"        pm.expect(jsonData.subactivity, \"current status not GEOTECH\").to.eql(\"GEOTECH\");",
+											"        pm.expect(jsonData.subactivity.registries_subactivity_code, \"current status not GEOTECH\").to.eql(\"GEOTECH\");",
 											"    });",
 											"})();",
 											""
@@ -2982,7 +3511,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"subactivity\": \"GEOTECH\",\n  \"current_status\": {\n    \"status\": \"A\"\n  }\n}"
+									"raw": "{\n\t\"subactivity\": \n\t{\n\t\t\"registries_subactivity_code\":\"GEOTECH\"\n\t},\n\t\"current_status\": {\n\t\t\"code\": \"A\"\n\t}\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/applications/{{created_application_guid}}/?format=json",
@@ -3004,6 +3533,283 @@
 									]
 								},
 								"description": "Create a new application for a registration"
+							},
+							"response": []
+						},
+						{
+							"name": "Update application - Classification and Qualification",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "28c548a6-75c6-481f-bfba-b93de721d3e6",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Successful POST request\", function () {",
+											"        pm.expect(pm.response.code, \"response code not 200\").to.eql(200);",
+											"    });",
+											"    var jsonData = pm.response.json();",
+											"    ",
+											"    pm.test(\"The record's subactivity is WATER\", function () {",
+											"        pm.expect(jsonData.subactivity.registries_subactivity_code, \"current status not WATER\").to.eql(\"WATER\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records primary certificate is correct\", function() {",
+											"        pm.expect(jsonData.primary_certificate.acc_cert_guid, \"primary_certificate not correct\").to.eql(\"28bf8730-dbb7-4218-8e9f-06bd51f60161\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records primary certificate no is correct\", function() {",
+											"        pm.expect(jsonData.primary_certificate_no, \"primary_certificate_no not correct\").to.eql(\"12345\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records proof of age is correct\", function() {",
+											"        pm.expect(jsonData.proof_of_age.code, \"proof_of_age not correct\").to.eql(\"PASSPORT\");",
+											"    });",
+											"",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \t\"subactivity\": {\n\t\t\"registries_subactivity_code\":\"WATER\"\n\t},\n\t\"primary_certificate\":\n\t{\n\t\t\"acc_cert_guid\":\"28bf8730-dbb7-4218-8e9f-06bd51f60161\"\n\t},\n  \t\"primary_certificate_no\": \"12345\",\n  \t\"proof_of_age\": {\n  \t\t\"code\": \"PASSPORT\"\n  \t}\n  }"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/applications/{{created_application_guid}}/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"applications",
+										"{{created_application_guid}}",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Update an application for a registration."
+							},
+							"response": []
+						},
+						{
+							"name": "Update application - Adjudication",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "0b7800e7-0118-4d99-ad80-53504e81245a",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Successful POST request\", function () {",
+											"        pm.expect(pm.response.code, \"response code not 200\").to.eql(200);",
+											"    });",
+											"    var jsonData = pm.response.json();",
+											"    ",
+											"    pm.test(\"The record's subactivity is WATER\", function () {",
+											"        pm.expect(jsonData.subactivity.registries_subactivity_code, \"current status not WATER\").to.eql(\"WATER\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records primary certificate is correct\", function() {",
+											"        pm.expect(jsonData.primary_certificate.acc_cert_guid, \"primary_certificate not correct\").to.eql(\"28bf8730-dbb7-4218-8e9f-06bd51f60161\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records primary certificate no is correct\", function() {",
+											"        pm.expect(jsonData.primary_certificate_no, \"primary_certificate_no not correct\").to.eql(\"12345\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records proof of age is correct\", function() {",
+											"        pm.expect(jsonData.proof_of_age.code, \"proof_of_age not correct\").to.eql(\"PASSPORT\");",
+											"    });",
+											"    ",
+											"    pm.test(\"Application recieved date set correctly\", function() {",
+											"        pm.expect(jsonData.application_recieved_date, \"application_recieved_date\").to.eql(\"2018-01-01\")",
+											"    })",
+											"    ",
+											"    pm.test(\"Current state is correct\", function() {",
+											"        pm.expect(jsonData.current_status.code).to.eql(\"A\")",
+											"    });",
+											"    ",
+											"    pm.test(\"Reason denied populated\", function() {",
+											"       pm.expect(jsonData.reason_denied).to.eql(\"Something\") ",
+											"    });",
+											"    ",
+											"    pm.test(\"Removal date is correct\", function() {",
+											"        pm.expect(jsonData.removal_date).to.eql(\"2018-01-01\")",
+											"    });",
+											"    ",
+											"    pm.test(\"Removal reason is correct\", function() {",
+											"        pm.expect(jsonData.removal_reason.code).to.eql(\"NLACT\")",
+											"    });",
+											"",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subactivity\": {\n    \"registries_subactivity_code\":\"WATER\"\n  },\n  \"primary_certificate\":\n  {\n    \"acc_cert_guid\":\"28bf8730-dbb7-4218-8e9f-06bd51f60161\"\n  },\n    \"primary_certificate_no\": \"12345\",\n    \"proof_of_age\": {\n      \"code\": \"PASSPORT\"\n    },\n    \"current_status\": {\"code\": \"A\"},\n    \"reason_denied\": \"Something\",\n    \"application_recieved_date\": \"2018-01-01\",\n    \"removal_date\": \"2018-01-01\",\n    \"removal_reason\": {\"code\": \"NLACT\"}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/applications/{{created_application_guid}}/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"applications",
+										"{{created_application_guid}}",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Update an application for a registration."
+							},
+							"response": []
+						},
+						{
+							"name": "Update application - Adjudication No Removal Reason",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "6286180b-7d36-4867-accf-2ab0183dd146",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Successful POST request\", function () {",
+											"        pm.expect(pm.response.code, \"response code not 200\").to.eql(200);",
+											"    });",
+											"    var jsonData = pm.response.json();",
+											"    ",
+											"    pm.test(\"The record's subactivity is WATER\", function () {",
+											"        pm.expect(jsonData.subactivity.registries_subactivity_code, \"current status not WATER\").to.eql(\"WATER\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records primary certificate is correct\", function() {",
+											"        pm.expect(jsonData.primary_certificate.acc_cert_guid, \"primary_certificate not correct\").to.eql(\"28bf8730-dbb7-4218-8e9f-06bd51f60161\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records primary certificate no is correct\", function() {",
+											"        pm.expect(jsonData.primary_certificate_no, \"primary_certificate_no not correct\").to.eql(\"12345\");",
+											"    });",
+											"    ",
+											"    pm.test(\"The records proof of age is correct\", function() {",
+											"        pm.expect(jsonData.proof_of_age.code, \"proof_of_age not correct\").to.eql(\"PASSPORT\");",
+											"    });",
+											"    ",
+											"    pm.test(\"Application recieved date set correctly\", function() {",
+											"        pm.expect(jsonData.application_recieved_date, \"application_recieved_date\").to.eql(\"2018-01-01\")",
+											"    })",
+											"    ",
+											"    pm.test(\"Current state is correct\", function() {",
+											"        pm.expect(jsonData.current_status.code).to.eql(\"A\")",
+											"    });",
+											"    ",
+											"    pm.test(\"Reason denied populated\", function() {",
+											"       pm.expect(jsonData.reason_denied).to.eql(\"Something\") ",
+											"    });",
+											"    ",
+											"    pm.test(\"Removal date is correct\", function() {",
+											"        pm.expect(jsonData.removal_date).to.eql(\"2018-01-01\")",
+											"    });",
+											"    ",
+											"    pm.test(\"Removal reason is correct\", function() {",
+											"        pm.expect(jsonData.removal_reason).to.eql(null)",
+											"    });",
+											"",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \t\"subactivity\": {\n\t\t\"registries_subactivity_code\":\"WATER\"\n\t},\n\t\"primary_certificate\":\n\t{\n\t\t\"acc_cert_guid\":\"28bf8730-dbb7-4218-8e9f-06bd51f60161\"\n\t},\n  \t\"primary_certificate_no\": \"12345\",\n  \t\"proof_of_age\": {\n  \t\t\"code\": \"PASSPORT\"\n  \t},\n  \t\"current_status\": {\"code\": \"A\"},\n  \t\"reason_denied\": \"Something\",\n  \t\"application_recieved_date\": \"2018-01-01\",\n  \t\"removal_date\": \"2018-01-01\",\n  \t\"removal_reason\": {\"code\": null}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/applications/{{created_application_guid}}/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"applications",
+										"{{created_application_guid}}",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Update an application for a registration."
 							},
 							"response": []
 						},
@@ -3082,6 +3888,70 @@
 							"response": []
 						},
 						{
+							"name": "Get application",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "337686ad-df95-478d-86ee-3a224ae76602",
+										"type": "text/javascript",
+										"exec": [
+											"( function() {",
+											"    pm.test(\"Successful GET request\", function () {",
+											"        pm.expect(pm.response.code, \"response code not 200\").to.eql(200);",
+											"    });",
+											"    var jsonData = pm.response.json()",
+											"})();",
+											""
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "JWT {{token}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "registration_no",
+											"value": "12345",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/applications/{{created_application_guid}}/?format=json",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"applications",
+										"{{created_application_guid}}",
+										""
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json"
+										}
+									]
+								},
+								"description": "Get registration record"
+							},
+							"response": []
+						},
+						{
 							"name": "Application delete",
 							"event": [
 								{
@@ -3106,7 +3976,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/applications/{{created_application_guid}}/?format=json",
 									"host": [
@@ -3155,7 +4028,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/registrations/{{created_registration_guid}}/?format=json",
 									"host": [
@@ -3204,7 +4080,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/drillers/{{created_driller_guid}}/?format=json",
 									"host": [
@@ -3253,7 +4132,10 @@
 										"value": "JWT {{token}}"
 									}
 								],
-								"body": {},
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
 								"url": {
 									"raw": "{{base_url}}/api/v1/organizations/{{created_guid}}/?format=json",
 									"host": [

@@ -1,4 +1,4 @@
-import { shallow, createLocalVue } from '@vue/test-utils'
+import { shallowMount, createLocalVue } from '@vue/test-utils'
 import Vuex from 'vuex'
 import VueMoment from 'vue-moment'
 import PersonNotes from '@/registry/components/people/PersonNotes'
@@ -20,13 +20,14 @@ describe('PersonNotes.vue', () => {
       error: () => null,
       user: () => null,
       currentDriller: jest.fn().mockReturnValue(fakePerson),
-      drillers: () => []
+      drillers: () => [],
+      userRoles: () => ({ registry: { edit: true, view: true, approve: true } })
     }
     store = new Vuex.Store({ getters, actions, mutations })
   })
 
   it('renders and has a title', () => {
-    const wrapper = shallow(PersonNotes, {
+    const wrapper = shallowMount(PersonNotes, {
       store,
       localVue,
       stubs: ['router-link', 'router-view'],
@@ -38,7 +39,7 @@ describe('PersonNotes.vue', () => {
   })
   it('displays notes', () => {
     // our fake person has 1 note, so $person-note-0 should render
-    const wrapper = shallow(PersonNotes, {
+    const wrapper = shallowMount(PersonNotes, {
       store,
       localVue,
       stubs: ['router-link', 'router-view'],

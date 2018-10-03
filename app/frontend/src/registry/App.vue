@@ -1,7 +1,7 @@
 <template>
   <div>
     <gwells-header/>
-    <main role="main">
+    <main role="main" class="p-0 mt-0 mt-sm-4">
       <b-container v-if="error">
         <api-error :error="error" resetter="SET_ERROR"/>
       </b-container>
@@ -32,37 +32,15 @@ export default {
 </script>
 
 <style lang="scss">
-@import url('https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
-@import '../../../gwells/static/gwells/css/ie10-viewport-bug-workaround.css';
-@import '~bootstrap/scss/_functions';
-@import '~bootstrap/scss/_variables';
-@import '~bootstrap/scss/mixins/_breakpoints';
+@import '../common/common.scss';
+@import '../common/assets/css/ie10-viewport-bug-workaround.css';
 
-html {
-  font-size: 14px;
-}
-body {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-main {
-  margin-bottom: 45px;
-  padding-top: 20px;
-  flex: auto;
-}
-header,
-footer {
-  flex: none;
-}
-.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-}
-
-// BC Gov Bootstrap 4 theme override
-.custom-select[size]:not([size="0"]) {
-  height:auto;
-  padding-right:.75rem;
-  background-image:none;
+@media print {
+  .registries-edit-btn {
+    display: none!important;
+  }
+  .registries-action-button {
+    display: none!important;
+  }
 }
 </style>

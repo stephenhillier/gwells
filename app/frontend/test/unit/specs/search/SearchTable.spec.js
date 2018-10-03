@@ -1,5 +1,5 @@
 import {
-  shallow,
+  shallowMount,
   mount,
   createLocalVue
 } from '@vue/test-utils'
@@ -22,10 +22,11 @@ describe('SearchTable.vue', () => {
 
   beforeEach(() => {
     getters = {
-      userIsAdmin: () => false,
       loading: () => false,
       listError: () => null,
-      drillers: jest.fn().mockReturnValue(fakePersonList)
+      drillers: jest.fn().mockReturnValue(fakePersonList),
+      userRoles: () => ({ registry: { edit: false, view: false, approve: false } }),
+      activity: () => 'DRILL'
     }
     actions = {
       [FETCH_DRILLER_LIST]: jest.fn()
@@ -37,7 +38,7 @@ describe('SearchTable.vue', () => {
   })
 
   it('has a row for every person', () => {
-    const wrapper = shallow(SearchTable, {
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
@@ -47,14 +48,12 @@ describe('SearchTable.vue', () => {
   })
 
   it('has the right people in each row', () => {
-    const wrapper = shallow(SearchTable, {
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.setData({
-      activity: 'Well Driller'
-    })
+
     // first row
     expect(wrapper.find('#registry-table #drillerName0').text())
       .toContain('Bob')
@@ -66,7 +65,7 @@ describe('SearchTable.vue', () => {
       .not.toContain('Bob')
   })
   it('shows the pagination button for next page when a link is returned by API', () => {
-    const wrapper = shallow(SearchTable, {
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
@@ -74,39 +73,99 @@ describe('SearchTable.vue', () => {
     expect(wrapper.find('#table-pagination-next').text()).toEqual('Next')
   })
   it('shows the pagination button for previous page when a link is returned by API', () => {
-    const wrapper = shallow(SearchTable, {
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
     })
     expect(wrapper.find('#table-pagination-prev').text()).toEqual('Previous')
   })
-  it('dispatches fetch driller list with correct querystring when pagination next clicked', () => {
-    const wrapper = shallow(SearchTable, {
+  it('shows the paganation button disabled for previous page when no previous link is present in payload', () => {
+    let fakePersonListCopy = Object.assign({}, fakePersonList)
+    fakePersonListCopy.previous = null
+    getters = {
+      loading: () => false,
+      listError: () => null,
+      drillers: jest.fn().mockReturnValue(fakePersonListCopy),
+      userRoles: () => ({ registry: { edit: false, view: false, approve: false } }),
+      activity: () => 'DRILL'
+    }
+    store = new Vuex.Store({
+      getters,
+      actions
+    })
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.find('#table-pagination-next').trigger('click')
-    expect(actions.FETCH_DRILLER_LIST.mock.calls[0][1]).toEqual({
-      limit: '30',
-      offset: '60'
-    })
+    expect(wrapper.find('#table-pagination-prev').attributes().disabled).toBe('disabled')
   })
-  it('dispatches fetch driller list with correct querystring when pagination prev clicked', () => {
-    const wrapper = shallow(SearchTable, {
+  it('shows the paganation button disabled for next page when no next link is present in payload', () => {
+    let fakePersonListCopy = Object.assign({}, fakePersonList)
+    fakePersonListCopy.next = null
+    getters = {
+      loading: () => false,
+      listError: () => null,
+      drillers: jest.fn().mockReturnValue(fakePersonListCopy),
+      userRoles: () => ({ registry: { edit: false, view: false, approve: false } }),
+      activity: () => 'DRILL'
+    }
+    store = new Vuex.Store({
+      getters,
+      actions
+    })
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
     })
+    expect(wrapper.find('#table-pagination-next').attributes().disabled).toBe('disabled')
+  })
+  it('should call getPage when pagination next clicked', () => {
+    const wrapper = shallowMount(SearchTable, {
+      store,
+      localVue,
+      stubs: ['router-link', 'router-view']
+    })
+    let spy = jest.spyOn(wrapper.vm, 'getPage')
+    wrapper.find('#table-pagination-next').trigger('click')
+    expect(spy).toBeCalledWith('limit=30&offset=60')
+    spy.mockRestore()
+  })
+  it('should call getPage when pagination previous is clicked', () => {
+    const wrapper = shallowMount(SearchTable, {
+      store,
+      localVue,
+      stubs: ['router-link', 'router-view']
+    })
+    let spy = jest.spyOn(wrapper.vm, 'getPage')
     wrapper.find('#table-pagination-prev').trigger('click')
+    expect(spy).toBeCalledWith('limit=30&offset=0')
+    spy.mockRestore()
+  })
+  it('should dispatch fetch driller when getPage is called', () => {
+    const wrapper = shallowMount(SearchTable, {
+      store,
+      localVue,
+      stubs: ['router-link', 'router-view']
+    })
+    wrapper.vm.getPage('limit=30&offset=0')
     expect(actions.FETCH_DRILLER_LIST.mock.calls[0][1]).toEqual({
       limit: '30',
       offset: '0'
     })
   })
+  it('should throw an error when getPage is called without required parameters', () => {
+    const wrapper = shallowMount(SearchTable, {
+      store,
+      localVue,
+      stubs: ['router-link', 'router-view']
+    })
+    expect(() => { wrapper.vm.getPage(null) }).toThrow(new Error('query parameter is required.'))
+  })
   it('emits the column code (e.g. surname) to be sorted when column sort button clicked', () => {
-    const wrapper = shallow(SearchTable, {
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
@@ -117,13 +176,10 @@ describe('SearchTable.vue', () => {
     ])
   })
   it('has the right columns when searching for drillers', () => {
-    const wrapper = shallow(SearchTable, {
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
-    })
-    wrapper.setProps({
-      activity: 'DRILL'
     })
     const tableHeaders = wrapper.findAll('th')
     const expectedHeaders = [
@@ -141,13 +197,22 @@ describe('SearchTable.vue', () => {
     }
   })
   it('has the right columns when searching for well pump installers', () => {
-    const wrapper = shallow(SearchTable, {
+    getters = {
+      user: () => 'user',
+      loading: () => false,
+      listError: () => null,
+      drillers: jest.fn().mockReturnValue(fakePersonList),
+      userRoles: () => ({ registry: { edit: true, view: true, approve: true } }),
+      activity: () => 'PUMP'
+    }
+    store = new Vuex.Store({
+      getters,
+      actions
+    })
+    const wrapper = shallowMount(SearchTable, {
       store,
       localVue,
       stubs: ['router-link', 'router-view']
-    })
-    wrapper.setProps({
-      activity: 'PUMP'
     })
     const tableHeaders = wrapper.findAll('th')
     const expectedHeaders = [
@@ -169,9 +234,7 @@ describe('SearchTable.vue', () => {
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.setData({
-      activity: 'DRILL'
-    })
+
     const personOrg = wrapper.find('#personOrg0').text()
     expect(personOrg).toEqual('Drillerson Drilling Ltd.')
   })
@@ -181,9 +244,7 @@ describe('SearchTable.vue', () => {
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.setData({
-      activity: 'DRILL'
-    })
+
     const personAddress = wrapper.find('#personAddress0').text()
     expect(personAddress).toContain('1111 Industrial St')
     expect(personAddress).toContain('Victoria, BC')
@@ -194,11 +255,9 @@ describe('SearchTable.vue', () => {
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.setData({
-      activity: 'DRILL'
-    })
+
     const personContact = wrapper.find('#personContact0').text()
-    expect(personContact).toContain('driller1@example.com')
+    expect(personContact).toContain('(250) 555-4123')
   })
   it('shows the driller\'s subactivities', () => {
     const wrapper = mount(SearchTable, {
@@ -206,9 +265,7 @@ describe('SearchTable.vue', () => {
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.setData({
-      activity: 'DRILL'
-    })
+
     const personSubActivity = wrapper.find('#personSubActivity0').text()
     expect(personSubActivity).toContain('Water Well Driller')
     expect(personSubActivity).toContain('Geoexchange Driller')
@@ -220,19 +277,18 @@ describe('SearchTable.vue', () => {
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.setData({
-      activity: 'DRILL'
-    })
+
     const personCertAuth = wrapper.find('#certAuth0').text()
     expect(personCertAuth).toContain('BC')
   })
   it('shows the driller\'s registration status', () => {
     getters = {
-      userIsAdmin: () => true,
       user: () => 'user',
       loading: () => false,
       listError: () => null,
-      drillers: jest.fn().mockReturnValue(fakePersonList)
+      drillers: jest.fn().mockReturnValue(fakePersonList),
+      userRoles: () => ({ registry: { edit: true, view: true, approve: true } }),
+      activity: () => 'DRILL'
     }
     store = new Vuex.Store({
       getters,
@@ -243,9 +299,7 @@ describe('SearchTable.vue', () => {
       localVue,
       stubs: ['router-link', 'router-view']
     })
-    wrapper.setData({
-      activity: 'DRILL'
-    })
+
     const personRegStatus = wrapper.find('#personRegStatus0').text()
     expect(personRegStatus).toContain('Active')
   })

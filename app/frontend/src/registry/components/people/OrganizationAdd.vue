@@ -4,7 +4,7 @@
       <api-error :error="error" resetter="SET_ERROR"></api-error>
     </div>
     <div class="container">
-        <b-form @submit.prevent="onFormSubmit()" @reset.prevent="onFormReset()">
+        <b-form autocomplete="off" @submit.prevent="onFormSubmit()" @reset.prevent="onFormReset()">
           <b-row>
             <b-col cols="12">
               <b-form-group
@@ -51,7 +51,7 @@
                 label="Province/State:"
                 label-for="provInput">
                 <b-form-select
-                  :options="provOptions"
+                  :options="provinceStateOptions"
                   v-model="orgForm.province_state"
                   :state="validation.province_state"
                   required>
@@ -89,6 +89,8 @@
                 <b-form-input
                     id="telInput"
                     type="text"
+                    :formatter="formatTel"
+                    lazy-formatter
                     v-model="orgForm.main_tel"/>
               </b-form-group>
             </b-col>
@@ -100,12 +102,32 @@
                 <b-form-input
                     id="faxInput"
                     type="text"
+                    :formatter="formatTel"
+                    lazy-formatter
                     v-model="orgForm.fax_tel"/>
               </b-form-group>
             </b-col>
           </b-row>
           <b-row>
-            <b-col cols="12">
+            <b-col cols="12" md="6">
+              <b-form-group
+                id="emailInputGroup"
+                label="Email:"
+                label-for="emailInput">
+                <b-form-input
+                    id="emailInput"
+                    type="text"
+                    :state="validation.email"
+                    aria-describedby="emailInputFeedback"
+                    v-model="orgForm.email"/>
+                <b-form-invalid-feedback id="emailInputFeedback">
+                  <div v-for="(error, index) in fieldErrors.email" :key="`urlInput error ${index}`">
+                    {{ error }}
+                  </div>
+                </b-form-invalid-feedback>
+              </b-form-group>
+            </b-col>
+            <b-col cols="12" md="6">
               <b-form-group
                 id="websiteInputGroup"
                 label="Website:"
@@ -130,7 +152,7 @@
           </b-row>
           <b-row class="my-3">
             <b-col>
-              <b-button type="submit" class="mr-2" variant="primary" :disabled="orgSubmitLoading">Submit</b-button>
+              <b-button type="submit" class="mr-2" variant="primary" :disabled="orgSubmitLoading">Save</b-button>
               <b-button type="reset" variant="light" id="orgFormResetButton">Cancel</b-button>
             </b-col>
           </b-row>
@@ -151,9 +173,12 @@
 <script>
 import ApiService from '@/common/services/ApiService.js'
 import { mapGetters } from 'vuex'
+import inputFormatMixin from '@/common/inputFormatMixin.js'
+import { FETCH_DRILLER_OPTIONS } from '@/registry/store/actions.types'
 
 export default {
   name: 'OrganizationAdd',
+  mixins: [inputFormatMixin],
   data () {
     return {
       orgForm: {
@@ -162,11 +187,11 @@ export default {
         city: '',
         province_state: '',
         postal_code: '',
+        email: '',
         main_tel: '',
         fax_tel: '',
         website_url: ''
       },
-      provOptions: ['BC', 'AB'],
       orgSubmitLoading: false,
       orgSubmitError: null,
       fieldErrors: {
@@ -179,10 +204,11 @@ export default {
     validation () {
       return {
         province_state: (this.fieldErrors.province_state && this.fieldErrors.province_state.length) ? false : null,
-        website_url: (this.fieldErrors.website_url && this.fieldErrors.website_url.length) ? false : null
+        website_url: (this.fieldErrors.website_url && this.fieldErrors.website_url.length) ? false : null,
+        email: (this.fieldErrors.email && this.fieldErrors.email.length) ? false : null
       }
     },
-    ...mapGetters(['error'])
+    ...mapGetters(['error', 'provinceStateOptions'])
   },
   methods: {
     onFormSubmit () {
@@ -216,6 +242,7 @@ export default {
         city: '',
         province_state: '',
         postal_code: '',
+        email: '',
         main_tel: '',
         fax_tel: '',
         website_url: ''
@@ -229,12 +256,14 @@ export default {
       this.fieldErrors = {
         contact_email: [],
         province_state: [],
-        website_url: []
+        website_url: [],
+        email: []
       }
     }
   },
   created () {
     this.resetFieldErrors()
+    this.$store.dispatch(FETCH_DRILLER_OPTIONS)
   }
 }
 </script>

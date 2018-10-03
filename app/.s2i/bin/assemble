@@ -33,6 +33,8 @@ if [[ ! -z "$UPGRADE_PIP_TO_LATEST" || ! -z "$ENABLE_PIPENV" ]]; then
   pip install -U pip setuptools wheel
 fi
 
+cd backend
+
 if [[ ! -z "$ENABLE_PIPENV" ]]; then
   install_pipenv
   echo "---> Installing dependencies via pipenv ..."
@@ -50,15 +52,19 @@ elif [[ -f setup.py ]]; then
   python setup.py develop
 fi
 
+cd ..
 cd frontend
 npm install
 npm run build
+# Run unit tests in build stage with the code below
+#echo "--> testing and building frontend files"
+#npm run unit -- --runInBand && npm run build
 cd ..
 
 if should_collectstatic; then
   (
     echo "---> Collecting Django static files ..."
-
+    cd backend
 
     APP_HOME=${APP_HOME:-.}
     # Look for 'manage.py' in the directory specified by APP_HOME, or the current directory
@@ -78,8 +84,16 @@ if should_collectstatic; then
     fi
 
     python $manage_file collectstatic --noinput
+
+    cd ..
   )
 fi
+
+# Run unit tests in build stage with the code below
+#echo "--> running Django unit tests"
+#cd backend
+#python manage.py test -c nose.cfg
+#cd ..
 
 # set permissions for any installed artifacts
 fix-permissions /opt/app-root

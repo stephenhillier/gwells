@@ -11,6 +11,7 @@ import PersonAdd from '@/registry/components/people/PersonAdd.vue'
 import ApplicationDetail from '@/registry/components/people/ApplicationDetail.vue'
 
 import OrganizationAdd from '@/registry/components/people/OrganizationAdd.vue'
+import OrganizationEdit from '@/registry/components/people/OrganizationEdit.vue'
 
 Vue.use(Router)
 
@@ -22,9 +23,8 @@ export default new Router({
       component: PersonEdit,
       beforeEnter: AuthGuard,
       meta: {
-        // these meta attributes are work in progress
-        view: 'person',
-        edit: 'person'
+        // list of required permissions (e.g. "edit: true" means user needs edit permission)
+        edit: true
       }
     },
     {
@@ -33,17 +33,16 @@ export default new Router({
       component: PersonAdd,
       beforeEnter: AuthGuard,
       meta: {
-        view: 'person',
-        edit: 'person'
+        edit: true
       }
     },
     {
-      path: '/people/:person_guid/applications/:classCode',
+      path: '/people/:person_guid/registrations/:registration_guid/applications/:application_guid',
       name: 'ApplicationDetail',
       component: ApplicationDetail,
       beforeEnter: AuthGuard,
       meta: {
-        view: 'person'
+        view: true
       }
     },
     {
@@ -52,7 +51,16 @@ export default new Router({
       component: PersonDetail,
       beforeEnter: AuthGuard,
       meta: {
-        view: 'person'
+        view: true
+      }
+    },
+    {
+      path: '/organizations/manage',
+      name: 'OrganizationEdit',
+      component: OrganizationEdit,
+      beforeEnter: AuthGuard,
+      meta: {
+        edit: true
       }
     },
     {
@@ -61,7 +69,7 @@ export default new Router({
       component: OrganizationAdd,
       beforeEnter: AuthGuard,
       meta: {
-        edit: 'organization'
+        edit: true
       }
     },
     {
@@ -71,5 +79,8 @@ export default new Router({
     }
   ],
   mode: 'history',
-  base: process.env.APPLICATION_ROOT
+  base: '/gwells/registries',
+  scrollBehavior (to, from, savedPosition) {
+    return { x: 0, y: 0 }
+  }
 })

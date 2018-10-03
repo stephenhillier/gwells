@@ -1,13 +1,16 @@
-import { shallow, createLocalVue } from '@vue/test-utils'
+import { mount, createLocalVue } from '@vue/test-utils'
 import Vuex from 'vuex'
+import VueMoment from 'vue-moment'
+import moxios from 'moxios'
 import PersonDetail from '@/registry/components/people/PersonDetail'
 import APIErrorMessage from '@/common/components/APIErrorMessage'
 import { SET_DRILLER } from '@/registry/store/mutations.types'
-import { FETCH_DRILLER } from '@/registry/store/actions.types'
+import { FETCH_DRILLER, FETCH_DRILLER_OPTIONS } from '@/registry/store/actions.types'
 import fakePerson from '../fakePerson'
 
 const localVue = createLocalVue()
 localVue.use(Vuex)
+localVue.use(VueMoment)
 
 describe('PersonDetail.vue', () => {
   let store
@@ -16,24 +19,31 @@ describe('PersonDetail.vue', () => {
   let actions
 
   beforeEach(() => {
+    moxios.install()
     getters = {
       loading: () => false,
       error: () => null,
       user: () => null,
       currentDriller: jest.fn().mockReturnValue(fakePerson),
-      drillers: () => []
+      drillers: () => [],
+      userRoles: () => ({ registry: { edit: true, view: true, approve: true } })
     }
     mutations = {
       [SET_DRILLER]: jest.fn()
     }
     actions = {
-      [FETCH_DRILLER]: jest.fn()
+      [FETCH_DRILLER]: jest.fn(),
+      [FETCH_DRILLER_OPTIONS]: jest.fn()
     }
     store = new Vuex.Store({ getters, actions, mutations })
   })
 
+  afterEach(() => {
+    moxios.uninstall()
+  })
+
   it('dispatches the fetch driller action when page loads', () => {
-    shallow(PersonDetail, {
+    mount(PersonDetail, {
       store,
       localVue,
       stubs: ['router-link', 'router-view'],
@@ -51,10 +61,11 @@ describe('PersonDetail.vue', () => {
         return { status: '400', statusText: 'error!' }
       },
       currentDriller: jest.fn().mockReturnValue(fakePerson),
-      drillers: () => []
+      drillers: () => [],
+      userRoles: () => ({ registry: { edit: true, view: true, approve: true } })
     }
     const storeError = new Vuex.Store({ getters, actions, mutations })
-    const wrapper = shallow(PersonDetail, {
+    const wrapper = mount(PersonDetail, {
       store: storeError,
       localVue,
       stubs: ['router-link', 'router-view'],
@@ -65,7 +76,7 @@ describe('PersonDetail.vue', () => {
     expect(wrapper.findAll(APIErrorMessage).length).toEqual(1)
   })
   it('doesn\'t load the error component if there is no error', () => {
-    const wrapper = shallow(PersonDetail, {
+    const wrapper = mount(PersonDetail, {
       store,
       localVue,
       stubs: ['router-link', 'router-view'],
@@ -76,7 +87,7 @@ describe('PersonDetail.vue', () => {
     expect(wrapper.findAll(APIErrorMessage).length).toEqual(0)
   })
   it('has a classifications property (based on the currentDriller loaded)', () => {
-    const wrapper = shallow(PersonDetail, {
+    const wrapper = mount(PersonDetail, {
       store,
       localVue,
       stubs: ['router-link', 'router-view'],

@@ -1,27 +1,35 @@
 import axios from 'axios'
+import qs from 'querystring'
 
 const logging = process.env.NODE_ENV !== 'production'
 
 const ApiService = {
   init () {
     axios.defaults.baseURL = process.env.AXIOS_BASE_URL
-    if (logging) {
-      console.log('turning on interceptors')
-      axios.interceptors.request.use(function (request) {
-        console.log(request)
-        return request
-      }, function (error) {
-        console.log(error)
-        return Promise.reject(error)
-      })
-      axios.interceptors.response.use(function (response) {
-        console.log(response)
-        return response
-      }, function (error) {
-        console.log(error)
-        return Promise.reject(error)
-      })
-    }
+
+    axios.interceptors.request.use(function (request) {
+      // log requests to console while logging is on
+      logging && console.log(request)
+
+      if (request.method === 'POST') {
+        // send data as x-www-form-urlencoded
+        request.data = qs.stringify(request.data)
+      }
+      return request
+    }, function (error) {
+      logging && console.log(error)
+      return Promise.reject(error)
+    })
+    axios.interceptors.response.use(function (response) {
+      logging && console.log(response)
+      return response
+    }, function (error) {
+      logging && console.log(error)
+      return Promise.reject(error)
+    })
+  },
+  hasAuthHeader () {
+    return !!axios.defaults.headers.common['Authorization']
   },
   authHeader (prefix, token) {
     // set auth header. Expects prefix to be "Bearer", "JWT" etc.
@@ -35,11 +43,8 @@ const ApiService = {
   query (resource, params) {
     return axios.get(resource, { params: params })
   },
-  get (resource, uuid) {
-    if (uuid.length && uuid.length === 36) {
-      return axios.get(`${resource}/${uuid}/`)
-    }
-    throw new Error(`API get: UUID required to fetch ${resource}`)
+  get (resource, record) {
+    return axios.get(`${resource}/${record}/`)
   },
   post (resource, params) {
     return axios.post(resource + '/', params)
@@ -49,6 +54,12 @@ const ApiService = {
   },
   options (resource) {
     return axios.options(resource)
+  },
+  delete (resource, record) {
+    return axios.delete(`${resource}/${record}/`)
+  },
+  history (resource, record) {
+    return axios.get(`${resource}/${record}/history/`)
   }
 }
 
